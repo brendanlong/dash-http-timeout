@@ -1,0 +1,15 @@
+{
+    "name": "dash-mpeg-ts-live-stream",
+    "version": "0.0.1",
+    "description": "A server to demonstrate extremely low-latency MPEG-TS live streaming with DASH and HTTP/2.",
+    "license": "Unlicense",
+    "author": {
+        "name": "Brendan Long",
+        "email": "self@brendanlong.com",
+        "url": "https://www.brendanlong.com"
+    },
+    "dependencies": {
+        "http2": "latest",
+        "yargs": "latest"
+    }
+}
