@@ -22,8 +22,8 @@ fs.watch(args.output, (event, filename) ->
     console.log(filename, event)
 )
 
+segmentDuration = 5
 p = childProcess.spawn("ffmpeg", ["-re", "-i", args.input, "-y", "-loglevel", "-16", \
-    "-s", "1280x720", "-c:v", "libx264", "-preset", "fast", "-c:a", "aac", "-strict", "-2", "-ab", "128k", "-ar", "44100", "-f", "mpegts", args.output + "/720p.ts", \
-    "-s", "640x480", "-c:v", "libx264", "-preset", "fast", "-c:a", "aac", "-strict", "-2", "-ab", "128k", "-ar", "44100", "-f", "mpegts", args.output + "/480p.ts"])
+    "-s", "1280x720", "-c:v", "libx264", "-preset", "fast", "-force_key_frames", "expr:gte(t,n_forced*" + segmentDuration + ")", "-c:a", "aac", "-strict", "-2", "-ab", "128k", "-ar", "44100", "-f", "ssegment", "-segment_time", segmentDuration, "-segment_time_delta", "0.05", args.output + "/segment-%d.720p.ts"])
 p.stdout.on "data", (data) -> console.log("stdout:" + data)
 p.stderr.on "data", (data) -> console.log("stderr:" + data)
