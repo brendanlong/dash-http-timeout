@@ -35,6 +35,19 @@ options =
     "key": fs.readFileSync("test-server.key", "utf8")
     "cert": fs.readFileSync("test-server.cert", "utf8")
 http2.createServer(options, (request, response) ->
-    response.writeHead(200)
-    response.end('<?xml version="1.0"?><MPD xmlns="urn:mpeg:dash:schema:mpd:2011" profiles="urn:mpeg:dash:profile:full:2011" minBufferTime="PT1.5S" type="dynamic" minimumUpdatePeriod="PT5S" availabilityStartTime="' + dateFormat(start, "yyyy-mm-dd'T'HH:MM:ss") + '"><Period id="1"><AdaptationSet mimeType="video/mp2t"><BaseURL>test/</BaseURL><Representation id="720p" bandwidth="3200000" width="1280" height="720"><SegmentTemplate media="segment-%d.ts" timescale="90000" duration="' + segmentDuration * 90000 + '"/></Representation></AdaptationSet></Period></MPD>')
+    if request.url is "/"
+        response.writeHead(200)
+        response.end('<?xml version="1.0"?><MPD xmlns="urn:mpeg:dash:schema:mpd:2011" profiles="urn:mpeg:dash:profile:full:2011" minBufferTime="PT1.5S" type="dynamic" minimumUpdatePeriod="PT5S" availabilityStartTime="' + dateFormat(start, "yyyy-mm-dd'T'HH:MM:ss") + '"><Period id="1"><AdaptationSet mimeType="video/mp2t"><BaseURL>test/</BaseURL><Representation id="720p" bandwidth="3200000" width="1280" height="720"><SegmentTemplate media="segment-%d.ts" timescale="90000" duration="' + segmentDuration * 90000 + '"/></Representation></AdaptationSet></Period></MPD>')
+    else if request.url.indexOf("..") is not -1
+        response.writeHead(404)
+        response.end("Nope")
+    else
+        fs.readFile("./" + request.url, (error, data) ->
+            if error
+                response.writeHead(404)
+                response.end("Doesn't exist")
+            else
+                response.writeHead(200)
+                response.end(data)
+        )
 ).listen("8081")
