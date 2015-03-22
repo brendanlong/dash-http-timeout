@@ -9,6 +9,7 @@
         "url": "https://www.brendanlong.com"
     },
     "dependencies": {
+        "dateformat": "latest",
         "http2": "latest",
         "yargs": "latest"
     }
