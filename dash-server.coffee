@@ -73,6 +73,7 @@ class FileSender
                     response.end("Error reading " + file + ": " + err)
                     saveThis.close()
                     return
+                console.log("Sending " + path.basename(file))
                 response.writeHead(200, {"Content-Type": mime.lookup file})
                 response.end(data)
                 saveThis.close()
