@@ -2,6 +2,7 @@
 """This script slowly copies DASH segments from the input folder to the output
    folder, to simulate a live DASH segmenter."""
 import argparse
+from datetime import datetime, timedelta
 import itertools
 import logging
 import os
@@ -9,6 +10,10 @@ import re
 import shutil
 import sys
 import time
+import xml.etree.ElementTree as ET
+
+
+XML_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 def make_segment_re(template, number="*"):
@@ -49,6 +54,9 @@ if __name__ == "__main__":
         "--start-number", "-n", help="First segment $Number$.",
         default=0, type=int)
     parser.add_argument(
+        "--startup-delay", type=float, default=0,
+        help="Delay in seconds before live streaming begins")
+    parser.add_argument(
         "--force", "-f", help="Clear output directory without confirmation.",
         action="store_true", default=False)
     parser.add_argument(
@@ -72,15 +80,44 @@ if __name__ == "__main__":
 
     segment_re = make_segment_re(args.segment_template)
     for file in list_files(args.input):
-        if not segment_re.match(file):
-            logging.debug("Copying %s to output folder." % file)
+        if file.endswith(".mpd"):
+            publish_time = datetime.utcnow()
+            start_time = publish_time + timedelta(seconds=args.startup_delay)
+            logging.info(
+                "Editing MPD@availabilityStartTime to start in %s seconds (at %s)" \
+                % (args.startup_delay, start_time))
+
+            ET.register_namespace("", "urn:mpeg:dash:schema:mpd:2011")
+            tree = ET.parse(os.path.join(args.input, file))
+            mpd = tree.getroot()
+            mpd.set("publishTime",
+                publish_time.strftime(XML_DATE_FORMAT))
+            mpd.set("availabilityStartTime",
+                start_time.strftime(XML_DATE_FORMAT))
+            mpd.set("minimumUpdatePeriod", "PT%sS" % (args.segment_duration))
+            mpd.set("type", "dynamic")
+
+            tree.write(os.path.join(args.output, file), xml_declaration=True,
+                method="xml", encoding="utf-8")
+        elif not segment_re.match(file):
+            logging.info("Copying %s to output folder." % file)
             copy_file(file, args.input, args.output)
+
+    if args.startup_delay:
+        logging.info("Waiting %s seconds before starting" % args.startup_delay)
+        time.sleep(args.startup_delay)
 
     for i in itertools.count(args.start_number):
         logging.info("Copying segment %s" % i)
         segment_re = make_segment_re(args.segment_template, i)
         logging.debug("Regular expression is %s" % segment_re)
+        found_files = False
         for file in list_files(args.input):
             if segment_re.match(file):
+                found_files = True
                 copy_file(file, args.input, args.output)
+        if not found_files:
+            print("Segment %s seemed to be the last segment, so we're done!" \
+                % (i - 1))
+            break
         time.sleep(args.segment_duration)
