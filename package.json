@@ -10,7 +10,7 @@
     },
     "dependencies": {
         "async": "latest",
-        "dateformat": "latest",
+        "mime": "latest",
         "yargs": "latest"
     }
 }
