@@ -23,6 +23,11 @@ Array.prototype.includes = (v) ->
     return false
 
 
+mime.define(
+    "application/dash+xml": ["mpd"]
+)
+
+
 if args.help or not args.directory
     console.log("Usage:", process.argv[0], "--directory [directory to serve]")
     process.exit(1)
