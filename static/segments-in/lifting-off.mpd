@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- MPD file Generated with GPAC version 0.5.2-DEV-rev192-g1bc6126-master  on 2015-03-25T22:32:02Z-->
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" minBufferTime="PT0.1S" type="static" maxSegmentDuration="PT0H0M5.00S" profiles="urn:mpeg:dash:profile:isoff-live:2011, http://dashif.org/guidelines/dash264">
+ <ProgramInformation moreInformationURL="http://gpac.sourceforge.net">
+  <Title>Lifting Off</Title>
+ </ProgramInformation>
+
+ <Period duration="PT0H3M21.30S">
+  <AdaptationSet segmentAlignment="true" maxWidth="1280" maxHeight="720" maxFrameRate="24" par="16:9" lang="und">
+   <SegmentTemplate timescale="12288" media="segment-$Number$.$RepresentationID$.m4s" startNumber="1" duration="61440" initialization="init.$RepresentationID$.mp4"/>
+   <Representation id="1" mimeType="video/mp4" codecs="avc1.64001f" width="1280" height="720" frameRate="24" sar="1:1" startWithSAP="1" bandwidth="1342406">
+   </Representation>
+  </AdaptationSet>
+  <AdaptationSet segmentAlignment="true" lang="und">
+   <SegmentTemplate timescale="32000" media="segment-$Number$.$RepresentationID$.m4s" startNumber="1" duration="159744" initialization="init.$RepresentationID$.mp4"/>
+   <Representation id="2" mimeType="audio/mp4" codecs="mp4a.40.2" audioSamplingRate="32000" startWithSAP="1" bandwidth="93313">
+    <AudioChannelConfiguration schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011" value="2"/>
+   </Representation>
+  </AdaptationSet>
+ </Period>
+</MPD>
