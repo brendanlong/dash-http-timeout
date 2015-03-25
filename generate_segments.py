@@ -57,6 +57,9 @@ if __name__ == "__main__":
         "--startup-delay", type=float, default=0,
         help="Delay in seconds before live streaming begins")
     parser.add_argument(
+        "--dynamic", action="store_true", default=False,
+        help="Edits the MPD to be dynamic (currently doesn't work in DASH.js).")
+    parser.add_argument(
         "--force", "-f", help="Clear output directory without confirmation.",
         action="store_true", default=False)
     parser.add_argument(
@@ -80,7 +83,7 @@ if __name__ == "__main__":
 
     segment_re = make_segment_re(args.segment_template)
     for file in list_files(args.input):
-        if file.endswith(".mpd"):
+        if args.dynamic and file.endswith(".mpd"):
             publish_time = datetime.utcnow()
             start_time = publish_time + timedelta(seconds=args.startup_delay)
             logging.info(
