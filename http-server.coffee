@@ -32,7 +32,6 @@ args = require("yargs")
     )
     .epilog("By Brendan Long <b.long@cablelabs.com> at CableLabs, Inc.")
     .argv
-async = require "async"
 fs = require "fs"
 http = require "http"
 mime = require "mime"
