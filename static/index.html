@@ -9,17 +9,17 @@
     <!--<script src="../../dist/dash.all.js"></script>-->
 
     <style>
+        * {
+            margin: 0;
+        }
         video {
-            width: 640px;
-            height: 360px;
+            max-width: 100%;
         }
     </style>
 
     <body onload="Dash.createAll()">
-        <div>
-            <video class="dashjs-player" autoplay preload="none" controls="true">
-                <source src="live/lifting-off.mpd" type="application/dash+xml"/>
-            </video>
-        </div>
+        <video class="dashjs-player" width="1280" autoplay preload="none" controls="true">
+            <source src="live/lifting-off.mpd" type="application/dash+xml"/>
+        </video>
     </body>
 </html>
