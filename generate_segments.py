@@ -52,7 +52,7 @@ if __name__ == "__main__":
         default="segment-$Number$.*.m4s")
     parser.add_argument(
         "--start-number", "-n", help="First segment $Number$.",
-        default=0, type=int)
+        default=1, type=int)
     parser.add_argument(
         "--startup-delay", type=float, default=0,
         help="Delay in seconds before live streaming begins")
