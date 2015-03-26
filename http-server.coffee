@@ -44,11 +44,13 @@ mime.define(
 
 
 class FileSender
-    constructor: (file, response, timeout) ->
-        @sent = false
+    constructor: (file, request, response, timeout) ->
+        @sending = false
         @file = path.resolve file
+        @basename = path.basename file
         @response = response
         @timeout = setTimeout @timeoutExpired.bind(this), timeout
+        request.connection.on "close", @close.bind(this)
         @watcher = null
         try
             @watcher = fs.watch(path.dirname(file), @fileChanged.bind(this))
@@ -58,35 +60,40 @@ class FileSender
             @close()
 
     fileChanged: (event, changedFile) ->
-        if changedFile is not null and changedFile != path.basename(@file)
+        if @sending or (changedFile is not null and changedFile != @basename)
             return
-        file = @file
-        response = @response
-        saveThis = this
-        fs.exists file, (exists) ->
-            if not exists
+        fs.exists @file, ((exists) ->
+            if @sending or not exists
                 return
-            fs.readFile file, (err, data) ->
+            @sending = true
+            fs.readFile @file, ((err, data) ->
                 if err
+                    msg = "Error reading " + @file + ": " + err
+                    console.log(msg)
                     response.writeHead 500, {"Content-Type": "text/plain"}
-                    response.end("Error reading " + file + ": " + err)
-                    saveThis.close()
+                    response.end(msg)
+                    @close()
                     return
-                console.log("Sending " + path.basename(file))
-                response.writeHead(200, {"Content-Type": mime.lookup(file)})
-                response.end(data)
-                saveThis.close()
+                console.log("Sending " + @file)
+                @response.writeHead(200, {"Content-Type": mime.lookup(@file)})
+                @response.end(data)
+                @close()
+            ).bind(this)
+        ).bind(this)
 
     timeoutExpired: ->
-        if not @sent
+        if not @sending
             @fileChanged()
-        if not @sent
+        if not @sending
+            @sending = true
+            console.log("Timeout expired for " + @file)
             @response.writeHead(404, {"Content-Type": "text/plain"})
             @response.end("Timeout expired and " + @file + " still doesn't exist.")
         @close()
 
     close: ->
-        @sent = true
+        if not @sending
+            console.log("Request for " + @file + " closed by client")
         clearTimeout(@timeout)
         if @watcher
             @watcher.close()
@@ -103,5 +110,5 @@ http.createServer((request, response) ->
         if requestedFile.slice(-1) == "/"
             requestedFile += "index.html"
         requestedFile = path.resolve requestedFile
-        new FileSender(requestedFile, response, args.timeout).fileChanged()
+        new FileSender(requestedFile, request, response, args.timeout).fileChanged()
 ).listen(args.port)
