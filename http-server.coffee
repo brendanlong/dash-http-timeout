@@ -98,8 +98,7 @@ class FileSender
         if @watcher
             @watcher.close()
 
-# HTTP Server
-start = Date.now() + 10
+
 http.createServer((request, response) ->
     console.log("Requesting " + request.url)
     if request.url[0] != "/" or request.url.indexOf("..") > -1
