@@ -1,7 +1,36 @@
 #!/usr/bin/env coffee
 args = require("yargs")
-    .alias("d", "directory")
-    .alias("h", "help")
+    .usage("Usage: $0 [options]")
+    .option("d",
+        alias: "directory"
+        demand: true
+        describe: "The directory to server (this directory will become / in
+            the HTTP server"
+        requiresArg: true
+        type: "string"
+    )
+    .help("h").alias("h", "help")
+    .option("p",
+        alias: "port"
+        default: 8081
+        describe: "The HTTP server port."
+        requiresArg: true
+    )
+    .option("t",
+        alias: "timeout"
+        default: 10000
+        describe: "The maximum timeout to apply (and the default timeout if
+            --require-header is not set)."
+        requireArg: true
+    )
+    .option("require-header",
+        describe: "Require the Timeout header to be sent by a client to apply
+            timeout logic. By default, the server applies the default timeout
+            to all requests (to make it easier to test against unmodified
+            clients), but this is probably a bad idea in most cases."
+        type: "boolean"
+    )
+    .epilog("By Brendan Long <b.long@cablelabs.com> at CableLabs, Inc.")
     .argv
 async = require "async"
 fs = require "fs"
@@ -10,35 +39,9 @@ mime = require "mime"
 path = require "path"
 
 
-String.prototype.endsWith = (suffix) ->
-    return this.indexOf(suffix, this.length - suffix.length) != -1
-
-String.prototype.contains = (s) ->
-    return this.indexOf(s) != -1
-
-Array.prototype.includes = (v) ->
-    for i in this
-        if i == v
-            return true
-    return false
-
-
 mime.define(
     "application/dash+xml": ["mpd"]
 )
-
-
-if args.help or not args.directory
-    console.log("Usage:", process.argv[0], "--directory [directory to serve]")
-    process.exit(1)
-
-# Create output directory if it doesn't exist
-try
-    if not fs.statSync(args.directory).isDirectory()
-        console.log("Output directory", args.directory, "is a file.")
-        process.exit(1)
-catch error
-    fs.mkdirSync(args.directory)
 
 
 class FileSender
@@ -96,13 +99,13 @@ class FileSender
 start = Date.now() + 10
 http.createServer((request, response) ->
     console.log("Requesting " + request.url)
-    if request.url[0] != "/" or request.url.contains ".."
+    if request.url[0] != "/" or request.url.indexOf("..") > -1
         response.writeHead(403, {"Content-Type": "text/plain"})
         response.end("Nope")
     else
         requestedFile = path.join ".", args.directory, request.url
-        if requestedFile.endsWith "/"
+        if requestedFile.slice(-1) == "/"
             requestedFile += "index.html"
         requestedFile = path.resolve requestedFile
-        new FileSender(requestedFile, response, 10000).fileChanged()
-).listen("8081")
+        new FileSender(requestedFile, response, args.timeout).fileChanged()
+).listen(args.port)
