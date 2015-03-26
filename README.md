@@ -2,6 +2,8 @@
 
 This example demonstrates a way to stream DASH segments with no HTTP-round-trip latency, using standard HTTP GET requests and HTTP/1.1.
 
+There is [a screencast demonstrating it on YouTube](https://www.youtube.com/watch?v=YUcfNzPaqf0).
+
 ## How it Works
 
 The HTTP server (http-server.coffee) is a normal HTTP server, except that if a client requests a file that doesn't exist, instead of immediately returning a 404 response, it watches for the file to appear until its timeout expires. As soon as the file appears, it sends the response. If the file doesn't appear within the timeout, the server sends a 404 like usual.
