@@ -57,6 +57,8 @@ If you want to play the MPD directly, it's at "/live/lifting-off.mpd".
 
 `generate_segments.py` is a script which imitates a live DASH segmenter by copying files from one directory to another. When run, it immediately copies the MPD and initialization segments, optionally waits for a given delay, and then copies segment files in order, sleeping for their duration between copies. Ideally, this example would use a real segmenter, but FFMPEG can't create DASH ISOBMFF segments and MP4Box won't create segments slowly.
 
+Because of limitations of Node.js's `fs.watch`, it's very important that the files be atomically moved into the live folder. A full inotify implementation wouldn't have this problem (it could watch for `IN_CLOSE_WRITE` before sending new files).
+
 Currently it uses a static MPD because dynamic MPDs aren't working for me in DASH.js. If you have a player that supports dynamic MPD's, you can try running `generate_segments.py` with `--dynamic`.
 
 This server currently adds a timeout to every request (60 seconds by default, configurable with `--timeout`) because it makes this easier to demonstrate with unmodified clients. If you want to require the "Timeout" header, add `--require-header`.
