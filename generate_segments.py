@@ -110,6 +110,7 @@ if __name__ == "__main__":
         logging.info("Waiting %s seconds before starting" % args.startup_delay)
         time.sleep(args.startup_delay)
 
+    start_time = time.time()
     for i in itertools.count(args.start_number):
         logging.info("Copying segment %s" % i)
         segment_re = make_segment_re(args.segment_template, i)
@@ -123,4 +124,5 @@ if __name__ == "__main__":
             print("Segment %s seemed to be the last segment, so we're done!" \
                 % (i - 1))
             break
-        time.sleep(args.segment_duration)
+        sleep_until = start_time + (args.segment_duration * i)
+        time.sleep(sleep_until - time.time())
