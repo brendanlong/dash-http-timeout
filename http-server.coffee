@@ -34,27 +34,27 @@ args = require("yargs")
     .argv
 fs = require "fs"
 http = require "http"
-mime = require "mime"
+nodeStatic = require "node-static"
 path = require "path"
 
 
-mime.define(
-    "application/dash+xml": ["mpd"]
-)
+staticServer = new nodeStatic.Server(args.directory, {cache: false})
 
 
 class FileSender
     constructor: (file, request, response, timeout) ->
         @sending = false
-        @file = path.resolve file
+        @file = file
+        @realfile = path.resolve(path.join(args.directory, "." + @file))
         @basename = path.basename file
+        @request = request
         @response = response
         @timeout = setTimeout @timeoutExpired.bind(this), timeout
         request.connection.on "close", @close.bind(this)
         request.connection.setMaxListeners(20)
         @watcher = null
         try
-            @watcher = fs.watch(path.dirname(file), @fileChanged.bind(this))
+            @watcher = fs.watch(path.dirname(@realfile), @fileChanged.bind(this))
         catch e
             response.writeHead(500, {"Content-Type": "text/plain"})
             response.end("Error occurred: " + e)
@@ -64,23 +64,12 @@ class FileSender
     fileChanged: (event, changedFile) ->
         if @sending or (changedFile is not null and changedFile != @basename)
             return
-        fs.exists @file, ((exists) ->
+        fs.exists @realfile, ((exists) ->
             if @sending or not exists
                 return
             @sending = true
-            fs.readFile @file, ((err, data) ->
-                if err
-                    msg = "Error reading " + @file + ": " + err
-                    console.log(msg)
-                    response.writeHead 500, {"Content-Type": "text/plain"}
-                    response.end(msg)
-                    @close()
-                    return
-                console.log("Sending " + @file)
-                @response.writeHead(200, {"Content-Type": mime.lookup(@file)})
-                @response.end(data)
-                @close()
-            ).bind(this)
+            staticServer.serveFile(@file, 200, {}, @request, @response)
+            @close()
         ).bind(this)
 
     timeoutExpired: ->
@@ -88,9 +77,10 @@ class FileSender
             @fileChanged()
         if not @sending
             @sending = true
+            msg = "Timeout expired for " + @file
             console.log("Timeout expired for " + @file)
-            @response.writeHead(404, {"Content-Type": "text/plain"})
-            @response.end("Timeout expired and " + @file + " still doesn't exist.")
+            @response.writeHead 404, {"Content-Type": "text/plain"}
+            @response.end("Timeout expired for " + @file)
         @close()
 
     close: ->
@@ -102,7 +92,7 @@ class FileSender
 
 
 http.createServer((request, response) ->
-    console.log("Requesting " + request.url)
+    console.log("Requesting " + request.url + " " + (request.headers["range"] or ""))
     if request.url[0] != "/" or request.url.indexOf("..") > -1
         response.writeHead(403, {"Content-Type": "text/plain"})
         response.end("Nope")
@@ -116,9 +106,8 @@ http.createServer((request, response) ->
         if timeout < 0
             timeout = 0
 
-        requestedFile = path.join ".", args.directory, request.url
+        requestedFile = request.url
         if requestedFile.slice(-1) == "/"
             requestedFile += "index.html"
-        requestedFile = path.resolve requestedFile
         new FileSender(requestedFile, request, response, args.timeout)
 ).listen(args.port)

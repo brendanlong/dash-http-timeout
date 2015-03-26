@@ -7,7 +7,7 @@
         "email": "b.long@cablelabs.com"
     },
     "dependencies": {
-        "mime": "latest",
+        "node-static": "latest",
         "yargs": "latest"
     }
 }
