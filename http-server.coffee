@@ -51,18 +51,15 @@ class FileSender
         @timeout = setTimeout @timeoutExpired.bind(this), timeout
         @watcher = null
         try
-            directory = path.dirname file
-            @watcher = fs.watch directory, @fileChanged.bind(this)
+            @watcher = fs.watch(path.dirname(file), @fileChanged.bind(this))
         catch e
             response.writeHead(500, {"Content-Type": "text/plain"})
             response.end("Error occurred: " + e)
             @close()
 
     fileChanged: (event, changedFile) ->
-        if changedFile is not null
-            basename = path.basename @file
-            if changedFile != basename
-                return
+        if changedFile is not null and changedFile != path.basename(@file)
+            return
         file = @file
         response = @response
         saveThis = this
@@ -76,17 +73,17 @@ class FileSender
                     saveThis.close()
                     return
                 console.log("Sending " + path.basename(file))
-                response.writeHead(200, {"Content-Type": mime.lookup file})
+                response.writeHead(200, {"Content-Type": mime.lookup(file)})
                 response.end(data)
                 saveThis.close()
 
     timeoutExpired: ->
         if not @sent
-            this.fileChanged()
+            @fileChanged()
         if not @sent
             @response.writeHead(404, {"Content-Type": "text/plain"})
             @response.end("Timeout expired and " + @file + " still doesn't exist.")
-        this.close()
+        @close()
 
     close: ->
         @sent = true
