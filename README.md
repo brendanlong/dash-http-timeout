@@ -12,6 +12,8 @@ Note that this server is simple because it allows us to demonstrate without havi
 
 ## Setup
 
+**Note: This relies on Node.js's `fs.watch` function, which only works properly on Linux. It could be adapted to other platforms, but it doesn't support them right now.**
+
 Install Git, CoffeeScript, Node.js, NPM, Python 3, and [Google Chrome](https://www.google.com/chrome/browser/desktop/) (or some other browser that supports MSE, h.264 and AAC).
 
 Fedora 21:
