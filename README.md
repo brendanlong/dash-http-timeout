@@ -10,6 +10,8 @@ Note that this server is simple because it allows us to demonstrate without havi
 
 `generate_segments.py` is a script which imitates a live DASH segmenter by copying files from one directory to another. When run, it immediately copies the MPD and initialization segments, optionally waits for a given delay, and then copies segment files in order, sleeping for their duration between copies. Ideally, this example would use a real segmenter, but FFMPEG can't create DASH ISOBMFF segments and MP4Box won't create segments slowly.
 
+Currently it uses a static MPD because dynamic MPDs aren't working for me in DASH.js. If you have a player that supports dynamic MPD's, you can try running `generate_segments.py` with `--dynamic`.
+
 ## Setup
 
 **Note: This relies on Node.js's `fs.watch` function, which only works properly on Linux. It could be adapted to other platforms, but it doesn't support them right now.**
