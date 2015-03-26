@@ -8,9 +8,9 @@ The HTTP server (http-server.coffee) is a normal HTTP server, except that if a c
 
 ## Setup
 
-**Note: This relies on Node.js's `fs.watch` function, which only works properly on Linux. It could be adapted to other platforms, but it doesn't support them right now.**
+**Note: This relies on Node.js's `fs.watch` function, which only works properly on Linux and OS X. It could be adapted to other platforms, but it doesn't support them right now.**
 
-Install Git, CoffeeScript, Node.js, NPM, Python 3, and [Google Chrome](https://www.google.com/chrome/browser/desktop/) (or some other browser that supports MSE, h.264 and AAC).
+Install Git, CoffeeScript, Node.js, NPM, Python 3, and [Google Chrome](https://www.google.com/chrome/browser/desktop/) (or some other browser that supports MSE, h.264 and AAC). This should work on Safari but currently doesn't and it's not clear to me why.
 
 Fedora 21:
 
@@ -19,6 +19,14 @@ Fedora 21:
 Ubuntu:
 
     sudo apt-get install coffeescript git nodejs npm python3
+
+OS X (with [Homebrew](http://brew.sh/):
+
+    # If you already have Node.js installed, make sure to run `brew update && brew upgrade`
+    # because Node.js 0.10.20  has a fatal bug with fs.watch, but it's fixed in 0.10.21
+    # If you see, "Bus Error: 10", that's what the problem is.
+    brew install git node python3
+    npm install -g coffee-script
 
 Clone this repo and navigate to it:
 
