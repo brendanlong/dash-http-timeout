@@ -8,7 +8,7 @@ The HTTP server (http-server.coffee) is a normal HTTP server, except that if a c
 
 ## Setup
 
-**Note: This relies on Node.js's `fs.watch` function, which only works properly on Linux and OS X. It could be adapted to other platforms, but it doesn't support them right now.**
+**Note: This relies on Node.js's `fs.watch` function, which may not work properly on all platforms. It has been tested and works on Linux (Fedora 21) and OS X.**
 
 Install Git, CoffeeScript, Node.js, NPM, Python 3, and [Google Chrome](https://www.google.com/chrome/browser/desktop/) (or some other browser that supports MSE, h.264 and AAC). This should work on Safari but currently doesn't and it's not clear to me why.
 
