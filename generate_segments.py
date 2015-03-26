@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 
@@ -33,8 +34,13 @@ def copy_file(file, in_dir, out_dir):
     logging.debug("Copying %s from %s to %s." % (file, in_dir, out_dir))
     old_path = os.path.join(in_dir, file)
     new_path = os.path.join(out_dir, file)
-    shutil.copyfile(old_path, new_path)
-
+    # Do an atomic copy
+    tmp_handle, tmp_name = tempfile.mkstemp(dir=out_dir)
+    logging.debug("Using tmp file %s" % (tmp_name))
+    with os.fdopen(tmp_handle, "wb") as tmp:
+        with open(old_path, "rb") as f:
+            tmp.write(f.read())
+        os.rename(tmp_name, new_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

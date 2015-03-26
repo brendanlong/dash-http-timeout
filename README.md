@@ -47,9 +47,7 @@ Now within 10 seconds, open this URL in Google Chrome:
 
 (The port is configurable with `--port`)
 
-If you have the terminal and Chrome both on the screen the same time, you can see that playback starts the exact moment when the first segment appears on the filesystem (and because the Python script doesn't correct for clock delay, playback will pause slightly when the next segment should be available, and then immediately resumes when the segment becomes available).
-
-**Sometimes this is a little buggy because DASH.js seems to give up if it gets a 404 for a segment. This would presumably not be a problem if we could use an MPD with type="dynamic". If playback stops early, close both programs with Ctrl+c and then start them up again and reload the page in Chrome.**
+If you have the terminal and Chrome both on the screen the same time, you can see that playback starts the exact moment when the first segment appears on the filesystem, and because DASH.js doesn't buffer correctly in this case, and copying the files takes time, there might be slight stutters before files become available. The stuttering could be fixed a tiny buffer (time to copy file + 1/2 RTT).
 
 If you want to replay this example, just re-run the `generate_segments.py` command and refresh the page in Google Chrome. `generate_segments.py` will need confirmation before deleting the static/live directory, since deleting folders without asking tends to be a bad idea. See `./generate_segments.py --help` for more options (in case you want to delete that directory without asking, or if you want to use a different example stream).
 
