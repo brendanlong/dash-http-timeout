@@ -107,6 +107,15 @@ http.createServer((request, response) ->
         response.writeHead(403, {"Content-Type": "text/plain"})
         response.end("Nope")
     else
+        if not args.require_header
+            timeout = args.timeout
+        if "timeout" in request.headers
+            timeout = request.headers["timeout"]
+            if timeout > args.timeout
+                timeout = args.timeout
+        if timeout < 0
+            timeout = 0
+
         requestedFile = path.join ".", args.directory, request.url
         if requestedFile.slice(-1) == "/"
             requestedFile += "index.html"
