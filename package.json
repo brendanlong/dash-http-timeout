@@ -1,7 +1,7 @@
 {
-    "name": "dash-mpeg-ts-live-stream",
+    "name": "dash-http-timeout-example",
     "version": "0.0.1",
-    "description": "A server to demonstrate extremely low-latency MPEG-TS live streaming with DASH and HTTP/2.",
+    "description": "A server to demonstrate extremely low-latency live streaming with DASH and HTTP, using a new 'Timeout' header.",
     "author": {
         "name": "Brendan Long",
         "email": "b.long@cablelabs.com"
