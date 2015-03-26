@@ -18,7 +18,7 @@ args = require("yargs")
     )
     .option("t",
         alias: "timeout"
-        default: 10000
+        default: 60000
         describe: "The maximum timeout to apply (and the default timeout if
             --require-header is not set)."
         requireArg: true
@@ -51,6 +51,7 @@ class FileSender
         @response = response
         @timeout = setTimeout @timeoutExpired.bind(this), timeout
         request.connection.on "close", @close.bind(this)
+        request.connection.setMaxListeners(20)
         @watcher = null
         try
             @watcher = fs.watch(path.dirname(file), @fileChanged.bind(this))
@@ -58,6 +59,7 @@ class FileSender
             response.writeHead(500, {"Content-Type": "text/plain"})
             response.end("Error occurred: " + e)
             @close()
+        @fileChanged()
 
     fileChanged: (event, changedFile) ->
         if @sending or (changedFile is not null and changedFile != @basename)
@@ -109,5 +111,5 @@ http.createServer((request, response) ->
         if requestedFile.slice(-1) == "/"
             requestedFile += "index.html"
         requestedFile = path.resolve requestedFile
-        new FileSender(requestedFile, request, response, args.timeout).fileChanged()
+        new FileSender(requestedFile, request, response, args.timeout)
 ).listen(args.port)
