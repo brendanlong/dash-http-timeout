@@ -1,4 +1,4 @@
-# HTTP Timeout DASH Example
+# HTTP "Wait-Until" Header DASH Example
 
 This example demonstrates a way to stream DASH segments with no HTTP-round-trip latency, using standard HTTP GET requests and HTTP/1.1.
 
@@ -6,9 +6,9 @@ There is [a screencast demonstrating it on YouTube](https://www.youtube.com/watc
 
 ## How it Works
 
-The HTTP server (http-server.coffee) is a normal HTTP server, except that if a client requests a file that doesn't exist, instead of immediately returning a 404 response, it watches for the file to appear until its timeout expires. As soon as the file appears, it sends the response. If the file doesn't appear within the timeout, the server sends a 404 like usual.
+The HTTP server (http-server.coffee) is a normal HTTP server, except that if a client requests a file that doesn't exist, instead of immediately returning a 404 response, it watches for the file to appear. As soon as the file appears, it sends the response.
 
-The server logic is implemented in [this Express Timeout Header module](https://github.com/brendanlong/express-timeout-header).
+The server logic is implemented in [this Express Wait-Until Header module](https://github.com/brendanlong/express-timeout-header).
 
 ## Setup
 
@@ -73,4 +73,4 @@ Because of limitations of Node.js's `fs.watch`, it's very important that the fil
 
 Currently it uses a static MPD because dynamic MPDs aren't working for me in DASH.js. If you have a player that supports dynamic MPD's, you can try running `generate_segments.py` with `--dynamic`.
 
-This server currently adds a timeout to every request (60 seconds by default, configurable with `--timeout`) because it makes this easier to demonstrate with unmodified clients. If you want to require the "Timeout" header, add `--require-header`.
+This server currently waits for every request because it makes this easier to demonstrate with unmodified clients. If you want to require the "Wait-Until" header, add `--require-header`.
