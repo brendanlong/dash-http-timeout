@@ -43,6 +43,13 @@ args = yargs
 
 
 app = express()
+
+if not args.requireHeader
+    app.use (req, res, next) ->
+        if not ("timeout" in req.headers)
+            req.headers.timeout = args.timeout
+        next()
+
 app.use(morgan(":method :url served :status in :response-time ms"))
 app.use(expressTimeout(args.directory,
     maxTimeout: args.timeout,
