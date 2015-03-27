@@ -13,5 +13,12 @@
     "express-timeout-header": "git://github.com/brendanlong/express-timeout-header.git#wait-until-v1.0.0",
     "morgan": "~1.5.2",
     "yargs": "~3.6.0"
+  },
+  "devDependencies": {
+    "coffeelint": "latest"
+  },
+  "scripts": {
+    "pretest": "coffeelint http-server.coffee",
+    "test": "true"
   }
 }
