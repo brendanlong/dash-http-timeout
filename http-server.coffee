@@ -1,6 +1,7 @@
 #!/usr/bin/env coffee
-yargs = require("yargs")
+yargs = require "yargs"
 express = require "express"
+expressTimeout = require "express-timeout-header"
 fs = require "fs"
 morgan = require "morgan"
 path = require "path"
@@ -41,56 +42,11 @@ args = yargs
     .argv
 
 
-timeoutHandler = (root, options) ->
-    if not "maxTimeout" in options
-        options["maxTimeout"] = 60000
-    if not "requireHeader" in options
-        options["requireHeader"] = true
-
-    return (req, res, next) ->
-        file = path.join(root, "./" + req.url)
-
-        # Don't bother watching files outside of the directory
-        if file.indexOf(root) != 0
-            return next()
-
-        if req.url[req.url.length - 1] == "/"
-            file = path.join(file, "index.html")
-
-        fs.exists file, (exists) ->
-            if exists
-                return next()
-
-            timeout = 0
-            if "timeout" in req.headers
-                timeout = Math.min(options["maxTimeout"], req.headers["timeout"])
-            else if not options["requireHeader"]
-                timeout = options["maxTimeout"]
-            if timeout <= 0
-                return next()
-
-            watcher = null
-            timer = null
-            done = ->
-                if watcher
-                    watcher.close()
-                clearTimeout(timer)
-                next()
-            try
-                watcher = fs.watch(path.dirname(file), (event, changedFile) ->
-                    if changedFile != path.basename(file)
-                        return
-                    done()
-                )
-                timer = setTimeout((->
-                    done()
-                ), timeout)
-            catch err
-                done()
-
-
 app = express()
 app.use(morgan(":method :url served :status in :response-time ms"))
-app.use(timeoutHandler(args.directory, {maxTimeout: args.timeout, requireHeader: args.requireHeader}))
+app.use(expressTimeout(args.directory,
+    maxTimeout: args.timeout,
+    requireHeader: args.requireHeader
+))
 app.use(express.static(args.directory))
 app.listen(args.port)

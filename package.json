@@ -7,12 +7,10 @@
     "type": "git",
     "url": "https://github.com/brendanlong/dash-http-timeout.git"
   },
-  "author": {
-    "name": "Brendan Long",
-    "email": "b.long@cablelabs.com"
-  },
+  "author": "Brendan Long <b.long@cablelabs.com>",
   "dependencies": {
     "express": "~4.12.3",
+    "express-timeout-header": "git://github.com/brendanlong/express-timeout-header.git#v1.0.0",
     "morgan": "~1.5.2",
     "yargs": "latest"
   }
