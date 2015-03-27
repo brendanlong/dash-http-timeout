@@ -10,7 +10,7 @@
   "author": "Brendan Long <b.long@cablelabs.com>",
   "dependencies": {
     "express": "~4.12.3",
-    "express-timeout-header": "~1.0.1",
+    "express-timeout-header": "~1.1.1",
     "morgan": "~1.5.2",
     "yargs": "~3.6.0"
   }
