@@ -8,6 +8,8 @@ There is [a screencast demonstrating it on YouTube](https://www.youtube.com/watc
 
 The HTTP server (http-server.coffee) is a normal HTTP server, except that if a client requests a file that doesn't exist, instead of immediately returning a 404 response, it watches for the file to appear until its timeout expires. As soon as the file appears, it sends the response. If the file doesn't appear within the timeout, the server sends a 404 like usual.
 
+The server logic is implemented in [this Express Timeout Header module](https://github.com/brendanlong/express-timeout-header).
+
 ## Setup
 
 **Note: This relies on Node.js's `fs.watch` function, which may not work properly on all platforms. It has been tested and works on Linux (Fedora 21) and OS X.**
