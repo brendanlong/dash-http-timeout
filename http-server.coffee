@@ -1,5 +1,11 @@
 #!/usr/bin/env coffee
-args = require("yargs")
+yargs = require("yargs")
+express = require "express"
+fs = require "fs"
+path = require "path"
+
+
+args = yargs
     .usage("Usage: $0 [options]")
     .option("d",
         alias: "directory"
@@ -32,82 +38,45 @@ args = require("yargs")
     )
     .epilog("By Brendan Long <b.long@cablelabs.com> at CableLabs, Inc.")
     .argv
-fs = require "fs"
-http = require "http"
-nodeStatic = require "node-static"
-path = require "path"
 
 
-staticServer = new nodeStatic.Server(args.directory, {cache: false})
+app = express()
+app.use(express.static(args.directory))
+app.use((req, res, next) ->
+    # TODO: Use Express static's handling to figure out real path?
+    file = path.join(args.directory, "." + req.url)
+    if req.url[req.url.length - 1] == "/"
+        file = path.join(file, "index.html")
 
+    timeout = 0
+    if "timeout" in req.headers
+        timeout = Math.min(args.timeout, req.headers["timeout"])
+    else if not args.requireHeader
+        timeout = args.timeout
+    if timeout <= 0
+        return next()
 
-class FileSender
-    constructor: (file, request, response, timeout) ->
-        @sending = false
-        @file = file
-        @realfile = path.resolve(path.join(args.directory, "." + @file))
-        @basename = path.basename file
-        @request = request
-        @response = response
-        @timeout = setTimeout @timeoutExpired.bind(this), timeout
-        request.connection.on "close", @close.bind(this)
-        request.connection.setMaxListeners(20)
-        @watcher = null
-        try
-            @watcher = fs.watch(path.dirname(@realfile), @fileChanged.bind(this))
-        catch e
-            response.writeHead(500, {"Content-Type": "text/plain"})
-            response.end("Error occurred: " + e)
-            @close()
-        @fileChanged()
-
-    fileChanged: (event, changedFile) ->
-        if @sending or (changedFile is not null and changedFile != @basename)
-            return
-        fs.exists @realfile, ((exists) ->
-            if @sending or not exists
+    basename = path.basename file
+    watcher = null
+    timer = null
+    done = ->
+        if watcher
+            watcher.close()
+        clearTimeout(timer)
+        next()
+    try
+        watcher = fs.watch(path.dirname(file), (event, changedFile) ->
+            if changedFile != basename
                 return
-            @sending = true
-            staticServer.serveFile(@file, 200, {}, @request, @response)
-            @close()
-        ).bind(this)
-
-    timeoutExpired: ->
-        if not @sending
-            @fileChanged()
-        if not @sending
-            @sending = true
-            msg = "Timeout expired for " + @file
-            console.log("Timeout expired for " + @file)
-            @response.writeHead 404, {"Content-Type": "text/plain"}
-            @response.end("Timeout expired for " + @file)
-        @close()
-
-    close: ->
-        if not @sending
-            console.log("Request for " + @file + " closed by client")
-        clearTimeout(@timeout)
-        if @watcher
-            @watcher.close()
-
-
-http.createServer((request, response) ->
-    console.log("Requesting " + request.url + " " + (request.headers["range"] or ""))
-    if request.url[0] != "/" or request.url.indexOf("..") > -1
-        response.writeHead(403, {"Content-Type": "text/plain"})
-        response.end("Nope")
-    else
-        if not args.require_header
-            timeout = args.timeout
-        if "timeout" in request.headers
-            timeout = request.headers["timeout"]
-            if timeout > args.timeout
-                timeout = args.timeout
-        if timeout < 0
-            timeout = 0
-
-        requestedFile = request.url
-        if requestedFile.slice(-1) == "/"
-            requestedFile += "index.html"
-        new FileSender(requestedFile, request, response, args.timeout)
-).listen(args.port)
+            console.log("File " + file + " appeared!")
+            done()
+        )
+        timer = setTimeout((->
+            console.log("Timeout for " + file + " expired!")
+            done()
+        ), timeout)
+    catch err
+        done()
+)
+app.use(express.static(args.directory))
+app.listen(args.port)

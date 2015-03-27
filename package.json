@@ -1,13 +1,18 @@
 {
-    "name": "dash-http-timeout-example",
-    "version": "0.0.1",
-    "description": "A server to demonstrate extremely low-latency live streaming with DASH and HTTP, using a new 'Timeout' header.",
-    "author": {
-        "name": "Brendan Long",
-        "email": "b.long@cablelabs.com"
-    },
-    "dependencies": {
-        "node-static": "latest",
-        "yargs": "latest"
-    }
+  "name": "dash-http-timeout-example",
+  "version": "0.0.2",
+  "description": "A server to demonstrate extremely low-latency live streaming with DASH and HTTP, using a new 'Timeout' header.",
+  "homepage": "https://github.com/brendanlong/dash-http-timeout",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brendanlong/dash-http-timeout.git"
+  },
+  "author": {
+    "name": "Brendan Long",
+    "email": "b.long@cablelabs.com"
+  },
+  "dependencies": {
+    "yargs": "latest",
+    "express": "~4.12.3"
+  }
 }
