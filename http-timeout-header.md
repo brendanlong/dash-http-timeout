@@ -2,22 +2,41 @@
 
 This defines a new HTTP header, "Timeout", which indicates to a server that if the requested resource does not exist, the server should watch for it until the timeout expires before sending a 404. The value is milliseconds as an integer.
 
+If an "If-None-Match" header is also sent by a client, it indicates that the server should also wait until the etag changes before responding (how etags are generated is up to servers).
+
 A server should have a maximum timeout, to prevent clients from wasting server resources with unreasonably long timeouts.
 
-## Example
+## Simple Example
 
     GET /dash/representation-1/segment-2.mp4
     Timeout: 5000
 
-## Server Handling
+### Server Handling
 
- 1. If the requested resource exists, the HTTP server will immediately send a 200 response with the content.
+ 1. If the requested resource exists, the HTTP server will immediately send a 200 or 304 response with the content.
 
- 2. If the requested resource does not exist, and the HTTP server does not understand this header, it will immediately respond with a 404 response.
+ 2. If the resource does not exist, and the server doesn't understand this header, it will immediately send a 404 response as usual.
 
  3. If the requested resource becomes available before the timeout expires, the server will send a 200 response with the content.
 
  4. If the timeout expires and the requested resource is not available, the server will send a 404 response.
+
+## ETag Example
+
+    GET /dash/representation-1/segment2.mp4
+    Timeout: 5000
+    If-None-Match: W/"52d77-3355156460"
+
+### Server Handling
+
+ 1. If the server does not understand these headers, it responds as usual (200, 304, or 404).
+
+ 2. When the file becomes available or updates:
+
+     1. The server generates an etag.
+     2. If the etag doesn't match the "If-None-Match" header, the server sends a 200 response.
+
+ 3. If the timeout expires, the server responds as usual (200, 304 or 404).
 
 ## Use Case: MPEG-DASH
 
@@ -44,6 +63,8 @@ A client could also make multiple future segment requests in order:
     Timeout: 4000
 
 However, I don't think there's any advantage to doing this. I mention it as an example, because it came up in a previous conversation.
+
+The If-None-Match / ETag version can be used to receive dynamic MPD updates immediately.
 
 ## Compared to K-Push
 
