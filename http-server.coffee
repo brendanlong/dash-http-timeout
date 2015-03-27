@@ -1,7 +1,7 @@
 #!/usr/bin/env coffee
 yargs = require "yargs"
 express = require "express"
-expressTimeout = require "express-timeout-header"
+expressWaitUntil = require "express-wait-until-header"
 fs = require "fs"
 morgan = require "morgan"
 path = require "path"
@@ -24,13 +24,6 @@ args = yargs
         describe: "The HTTP server port."
         requiresArg: true
     )
-    .option("t",
-        alias: "timeout"
-        default: 10000
-        describe: "The maximum timeout to apply (and the default timeout if
-            --require-header is not set)."
-        requireArg: true
-    )
     .option("require-header",
         describe: "Require the Timeout header to be sent by a client to apply
             timeout logic. By default, the server applies the default timeout
@@ -46,14 +39,11 @@ app = express()
 
 if not args.requireHeader
     app.use (req, res, next) ->
-        if not ("timeout" in req.headers)
-            req.headers.timeout = args.timeout
+        if not ("wait-until" in req.headers)
+            req.headers["wait-until"] = "available";
         next()
 
 app.use(morgan(":method :url served :status in :response-time ms"))
-app.use(expressTimeout(args.directory,
-    maxTimeout: args.timeout,
-    requireHeader: args.requireHeader
-))
+app.use(expressWaitUntil(args.directory))
 app.use(express.static(args.directory))
 app.listen(args.port)
