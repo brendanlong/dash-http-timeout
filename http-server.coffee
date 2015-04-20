@@ -57,3 +57,4 @@ app.use(expressTimeout(args.directory,
 ))
 app.use(express.static(args.directory))
 app.listen(args.port)
+console.log("Started server at: http://localhost:" + args.port);
